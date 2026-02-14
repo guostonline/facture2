@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import type { Invoice } from '@/types';
-import { format } from 'date-fns';
 
 interface AdminChartsProps {
     invoices: Invoice[] | undefined;
@@ -29,15 +28,6 @@ export function AdminCharts({ invoices }: AdminChartsProps) {
     // 2. Chart by CDZ/User - assuming "user.name" maps to CDZ/Agent
     const cdzData = useMemo(() => {
         if (!invoices) return [];
-        const counts: Record<string, number> = {};
-        invoices.forEach(inv => {
-            const agent = inv.user?.name || "Unknown";
-            counts[agent] = (counts[agent] || 0) + (inv.total_amount || 0); // Using Total Amount or Count? User didn't specify.
-            // Let's use COUNT for consistency with "chart by agence" usually implying count, 
-            // but for "User/CDZ" performance is often measured in volume.
-            // Let's stick to COUNT for now as it's simpler visual.
-            // Actually, let's use COUNT for both to be safe.
-        });
 
         // Re-calculating as COUNT
         const countsByCount: Record<string, number> = {};
@@ -70,7 +60,7 @@ export function AdminCharts({ invoices }: AdminChartsProps) {
                                 cursor={{ fill: 'transparent' }}
                             />
                             <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]}>
-                                {agenceData.map((entry, index) => (
+                                {agenceData.map((_, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Bar>
@@ -90,12 +80,12 @@ export function AdminCharts({ invoices }: AdminChartsProps) {
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
-                                label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                                label={({ percent }: { percent?: number }) => `${((percent || 0) * 100).toFixed(0)}%`}
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
                             >
-                                {cdzData.map((entry, index) => (
+                                {cdzData.map((_, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
