@@ -121,6 +121,10 @@ export default function Login() {
                         S'inscrire
                     </Link>
                 </div>
+
+                <div className="text-center text-[10px] text-muted-foreground/30 mt-6 font-mono">
+                    v1.0.0 ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'dev'})
+                </div>
             </div>
         </div>
     );

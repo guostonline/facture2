@@ -1,22 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/logo.png";
-
-// Data mapping Agencies to CDZs
-const AGENCY_CDZ_MAP: Record<string, string[]> = {
-    "AGADIR": ["CHAKIB EL FIL", "BOUTMEZGUINE MOSTAFA"],
-    "OUJDA": ["MOHAMED KANI", "RACHID MADANE"],
-    "FES": ["AHMED RAJA"],
-    "TANGER": ["CDZ TANGER DET", "MOHAMED ELBAHOUDI"],
-    "CASA": ["IZEN NABIL", "TOUMLILT HASSAN", "ABOULHASSANE ABDELOUAHE", "FAYCEL OUDGHIRI", "BADEREDDINE HAFID"],
-    "RABAT": ["BAALAKI YOUSSEF", "BOULEMDARAT AHMED", "HASSAN EL AOUNI"],
-    "MEKNES": ["HAMZA EL BIAD", "CDZ MEKNES DET"],
-    "MARRAKECH": ["HADDOU OUAIJANE", "MESKOURI IDDER"],
-    "SIEGE": []
-};
+import { AGENCES, CDZ_LIST, CDA_LIST, VENDEURS_GROS } from "@/constants/agencies";
 
 export default function Signup() {
     const [email, setEmail] = useState("");
@@ -24,10 +12,20 @@ export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
     const [name, setName] = useState("");
     const [agency, setAgency] = useState("");
-    const [isManualCdz, setIsManualCdz] = useState(false);
+    const [role, setRole] = useState("CDZ");
+    const [isManualName, setIsManualName] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+
+    // Derived list of names based on Agency and Role
+    const availableNames = useMemo(() => {
+        if (!agency) return [];
+        if (role === "CDZ") return CDZ_LIST.filter(i => i.agence === agency).map(i => i.cdz);
+        if (role === "CDA") return CDA_LIST.filter(i => i.agence === agency).map(i => i.cda);
+        if (role === "Vendeur Gros") return VENDEURS_GROS.filter(i => i.agence === agency).map(i => i.vendeur);
+        return [];
+    }, [agency, role]);
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,7 +33,7 @@ export default function Signup() {
         setError(null);
 
         if (!email.endsWith("@madec.co.ma")) {
-            setError("Email must be from @madec.co.ma domain");
+            setError("L'email doit appartenir au domaine @madec.co.ma");
             setLoading(false);
             return;
         }
@@ -48,7 +46,8 @@ export default function Signup() {
                     data: {
                         name,
                         city: agency,
-                        role: "user"
+                        role: "user",
+                        job_title: role
                     }
                 }
             });
@@ -56,7 +55,6 @@ export default function Signup() {
             if (authError) throw authError;
 
             if (user) {
-                // Profile creation is now handled by a database trigger on auth.users
                 navigate("/");
             }
         } catch (err: any) {
@@ -68,9 +66,17 @@ export default function Signup() {
 
     const handleAgencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setAgency(e.target.value);
-        setName(""); // Reset CDZ name when agency changes
-        setIsManualCdz(false);
+        setName("");
+        setIsManualName(false);
     };
+
+    const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setRole(e.target.value);
+        setName("");
+        setIsManualName(false);
+    };
+
+    const showManualInput = role === "Autre" || role === "Siège" || isManualName || availableNames.length === 0;
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
@@ -98,6 +104,7 @@ export default function Signup() {
                 )}
 
                 <form onSubmit={handleSignup} className="space-y-4">
+
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Agence</label>
                         <select
@@ -107,22 +114,36 @@ export default function Signup() {
                             onChange={handleAgencyChange}
                         >
                             <option value="">Sélectionnez l'agence</option>
-                            {Object.keys(AGENCY_CDZ_MAP).map((city) => (
+                            {AGENCES.map((city) => (
                                 <option key={city} value={city}>{city}</option>
                             ))}
                         </select>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                            {agency === "SIEGE" ? "Nom complet" : "Nom du CDZ"}
-                        </label>
-                        {agency === "SIEGE" ? (
+                        <label className="text-sm font-medium">Fonction / Rôle</label>
+                        <select
+                            required
+                            className="w-full px-4 py-3 bg-background/50 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            value={role}
+                            onChange={handleRoleChange}
+                        >
+                            <option value="CDZ">CDZ</option>
+                            <option value="CDA">CDA (Chef d'Agence)</option>
+                            <option value="Vendeur Gros">Vendeur Gros</option>
+                            <option value="Siège">Siège</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Nom complet</label>
+                        {showManualInput ? (
                             <input
                                 type="text"
                                 placeholder="Entrez votre nom complet"
                                 required
-                                className="w-full px-4 py-3 bg-background/50 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                className="w-full px-4 py-3 bg-background/50 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all animate-in fade-in"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                             />
@@ -132,36 +153,24 @@ export default function Signup() {
                                     required
                                     disabled={!agency}
                                     className="w-full px-4 py-3 bg-background/50 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
-                                    value={isManualCdz ? "OTHER" : name}
+                                    value={isManualName ? "OTHER" : name}
                                     onChange={(e) => {
                                         const val = e.target.value;
                                         if (val === "OTHER") {
-                                            setIsManualCdz(true);
+                                            setIsManualName(true);
                                             setName("");
                                         } else {
-                                            setIsManualCdz(false);
+                                            setIsManualName(false);
                                             setName(val);
                                         }
                                     }}
                                 >
-                                    <option value="">Sélectionnez le CDZ</option>
-                                    {agency && AGENCY_CDZ_MAP[agency]?.map((cdz) => (
-                                        <option key={cdz} value={cdz}>{cdz}</option>
+                                    <option value="">Sélectionnez votre nom</option>
+                                    {availableNames.map((n) => (
+                                        <option key={n} value={n}>{n}</option>
                                     ))}
                                     <option value="OTHER">Autre (Saisir manuellement)</option>
                                 </select>
-
-                                {isManualCdz && (
-                                    <input
-                                        type="text"
-                                        placeholder="Entrez votre nom complet"
-                                        required
-                                        autoFocus
-                                        className="w-full mt-2 px-4 py-3 bg-background/50 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all animate-in fade-in slide-in-from-top-1"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                    />
-                                )}
                             </>
                         )}
                     </div>

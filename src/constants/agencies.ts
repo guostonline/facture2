@@ -28,6 +28,28 @@ export const VENDEURS_GROS: VendeurGros[] = [
     { agence: "TANGER", vendeur: "075 LAMINE SAID" },
 ];
 
+export const CDZ_LIST = [
+    { agence: "AGADIR", cdz: "CHAKIB EL FIL" },
+    { agence: "AGADIR", cdz: "BOUTMEZGUINE MOSTAFA" },
+    { agence: "OUJDA", cdz: "MOHAMED KANI" },
+    { agence: "OUJDA", cdz: "RACHID MADANE" },
+    { agence: "FES", cdz: "AHMED RAJA" },
+    { agence: "TANGER", cdz: "CDZ TANGER DET" },
+    { agence: "TANGER", cdz: "MOHAMED ELBAHOUDI" },
+    { agence: "CASA", cdz: "IZEN NABIL" },
+    { agence: "CASA", cdz: "TOUMLILT HASSAN" },
+    { agence: "CASA", cdz: "ABOULHASSANE ABDELOUAHE" },
+    { agence: "CASA", cdz: "FAYCEL OUDGHIRI" },
+    { agence: "CASA", cdz: "BADEREDDINE HAFID" },
+    { agence: "RABAT", cdz: "BAALAKI YOUSSEF" },
+    { agence: "RABAT", cdz: "BOULEMDARAT AHMED" },
+    { agence: "RABAT", cdz: "HASSAN EL AOUNI" },
+    { agence: "MEKNES", cdz: "HAMZA EL BIAD" },
+    { agence: "MEKNES", cdz: "CDZ MEKNES DET" },
+    { agence: "MARRAKECH", cdz: "HADDOU OUAIJANE" },
+    { agence: "MARRAKECH", cdz: "MESKOURI IDDER" },
+];
+
 export const CDA_LIST = [
     { agence: "FES", cda: "NOUREDDINE SOUATI" },
     { agence: "OUJDA", cda: "BENMASSAOUD NAOUFAL" },
@@ -40,6 +62,8 @@ export const CDA_LIST = [
 ];
 
 export const AGENCES = Array.from(new Set([
+    "SIEGE",
     ...VENDEURS_GROS.map(v => v.agence),
-    ...CDA_LIST.map(c => c.agence)
+    ...CDA_LIST.map(c => c.agence),
+    ...CDZ_LIST.map(c => c.agence)
 ])).sort();
