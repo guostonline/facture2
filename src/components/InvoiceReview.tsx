@@ -3,6 +3,7 @@ import type { InvoiceData } from "@/types";
 import { useCreateInvoice } from "@/hooks/useInvoices";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Save, X } from "lucide-react";
+import { InvoiceItemsTable } from "@/components/InvoiceItemsTable";
 
 interface InvoiceReviewProps {
     data: InvoiceData;
@@ -87,7 +88,7 @@ export function InvoiceReview({ data, file, onCancel, onSuccess }: InvoiceReview
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Total Amount</label>
+                        <label className="text-sm font-medium">Montant Total</label>
                         <input
                             type="number"
                             step="0.01"
@@ -96,6 +97,16 @@ export function InvoiceReview({ data, file, onCancel, onSuccess }: InvoiceReview
                             onChange={e => updateField("total_amount", parseFloat(e.target.value))}
                         />
                     </div>
+                </div>
+
+                {/* Line Items Table */}
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Articles ({formData.line_items?.length || 0})</label>
+                    <InvoiceItemsTable
+                        items={formData.line_items || []}
+                        onItemsChange={(items) => updateField("line_items", items)}
+
+                    />
                 </div>
 
                 <div className="space-y-2">
@@ -107,21 +118,6 @@ export function InvoiceReview({ data, file, onCancel, onSuccess }: InvoiceReview
                         onChange={e => updateField("promotion_mechanism", e.target.value)}
                     />
                 </div>
-
-                {/* Line Items Preview (Simplified) */}
-                {formData.line_items && formData.line_items.length > 0 && (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Detected Items ({formData.line_items.length})</label>
-                        <div className="bg-muted/50 rounded-md p-3 text-sm max-h-40 overflow-y-auto">
-                            {formData.line_items.map((item, idx) => (
-                                <div key={idx} className="flex justify-between py-1 border-b border-border/50 last:border-0">
-                                    <span className="truncate flex-1">{item.description}</span>
-                                    <span className="ml-2 font-mono">{item.amount.toFixed(2)}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 <div className="flex justify-end gap-3 pt-4">
                     <button

@@ -8,6 +8,7 @@ import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import AdminDashboard from "@/pages/AdminDashboard";
+import Compare from "@/pages/Compare";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,11 @@ function App() {
                   <Route path="/admin" element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/compare" element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <Compare />
                     </ProtectedRoute>
                   } />
                 </Route>

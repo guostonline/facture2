@@ -60,7 +60,11 @@ export function AdminInvoiceTable({ invoices, isLoading, onEdit }: AdminInvoiceT
                     </thead>
                     <tbody className="divide-y divide-border/50">
                         {invoices.map((invoice) => (
-                            <tr key={invoice.id} className="group hover:bg-blue-50/50 dark:hover:bg-muted/20 transition-colors">
+                            <tr
+                                key={invoice.id}
+                                className="group hover:bg-blue-50/50 dark:hover:bg-muted/20 transition-colors cursor-pointer"
+                                onClick={() => onEdit(invoice)}
+                            >
                                 {/* Status */}
                                 <td className="px-6 py-5">
                                     <span className={cn(
@@ -113,7 +117,7 @@ export function AdminInvoiceTable({ invoices, isLoading, onEdit }: AdminInvoiceT
                                 </td>
 
                                 {/* Actions */}
-                                <td className="px-6 py-5 text-right">
+                                <td className="px-6 py-5 text-right" onClick={(e) => e.stopPropagation()}>
                                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         {invoice.status === 'pending' && (
                                             <>

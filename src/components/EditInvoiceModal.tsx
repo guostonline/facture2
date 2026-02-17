@@ -21,7 +21,9 @@ export function EditInvoiceModal({ invoice, isOpen, onClose, onSave }: EditInvoi
         invoice_date: invoice.invoice_date,
         category: invoice.category || "Other",
         total_amount: invoice.total_amount,
-        line_items: invoice.line_items || []
+        line_items: invoice.line_items || [],
+        final_price: invoice.final_price,
+        promotion_mechanism: invoice.promotion_mechanism
     });
 
     const handleSave = async () => {
@@ -35,7 +37,9 @@ export function EditInvoiceModal({ invoice, isOpen, onClose, onSave }: EditInvoi
                     invoice_number: formData.invoice_number,
                     invoice_date: formData.invoice_date,
                     category: formData.category,
-                    total_amount: formData.total_amount
+                    total_amount: formData.total_amount,
+                    final_price: formData.final_price,
+                    promotion_mechanism: formData.promotion_mechanism
                 })
                 .eq("id", invoice.id);
 
@@ -62,7 +66,8 @@ export function EditInvoiceModal({ invoice, isOpen, onClose, onSave }: EditInvoi
                 unit_price: item.unit_price,
                 amount: item.amount,
                 discount: item.discount,
-                net_price: item.net_price
+                net_price: item.net_price,
+                promotion_price: item.promotion_price
             }));
 
             const { error: insError } = await supabase
@@ -150,7 +155,21 @@ export function EditInvoiceModal({ invoice, isOpen, onClose, onSave }: EditInvoi
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Articles</label>
-                                <InvoiceItemsTable items={formData.line_items} onItemsChange={handleItemsChange} />
+                                <InvoiceItemsTable
+                                    items={formData.line_items}
+                                    onItemsChange={handleItemsChange}
+
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Commentaire</label>
+                                <textarea
+                                    className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[80px] resize-none"
+                                    value={formData.promotion_mechanism || ""}
+                                    onChange={(e) => setFormData({ ...formData, promotion_mechanism: e.target.value })}
+                                    placeholder="Ajouter un commentaire..."
+                                />
                             </div>
 
                             <div className="flex justify-end gap-4 pt-4 border-t border-border">

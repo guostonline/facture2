@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInvoices } from "@/hooks/useInvoices";
 import { AdminInvoiceTable } from "@/components/AdminInvoiceTable";
@@ -6,7 +6,7 @@ import { EditInvoiceModal } from "@/components/EditInvoiceModal";
 import type { Invoice } from "@/types";
 import {
     Users, Plus, Search, Filter,
-    ChevronDown, Clock, FileText, CreditCard
+    ChevronDown, ChevronUp, Clock, FileText, CreditCard
 } from "lucide-react";
 import { AdminCharts } from "@/components/AdminCharts";
 
@@ -15,6 +15,7 @@ export default function AdminDashboard() {
     const { data: invoices, isLoading, error, refetch } = useInvoices();
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState<string>("all");
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -22,17 +23,27 @@ export default function AdminDashboard() {
     const pendingInvoices = invoices?.filter(i => i.status === 'pending').length || 0;
     const approvedInvoices = invoices?.filter(i => i.status === 'approved').length || 0;
 
-    // Filter logic
-    const filteredInvoices = invoices?.filter(invoice => {
-        const matchesSearch =
-            invoice.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            invoice.store_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            invoice.user?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    // Filter and Sort logic
+    const filteredInvoices = useMemo(() => {
+        if (!invoices) return [];
 
-        const matchesStatus = filterStatus === "all" || invoice.status === filterStatus;
+        return invoices
+            .filter(invoice => {
+                const matchesSearch =
+                    invoice.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    invoice.store_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    invoice.user?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        return matchesSearch && matchesStatus;
-    });
+                const matchesStatus = filterStatus === "all" || invoice.status === filterStatus;
+
+                return matchesSearch && matchesStatus;
+            })
+            .sort((a, b) => {
+                const dateA = new Date(a.invoice_date || a.created_at || 0).getTime();
+                const dateB = new Date(b.invoice_date || b.created_at || 0).getTime();
+                return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+    }, [invoices, searchTerm, filterStatus, sortOrder]);
 
     const handleEdit = (invoice: Invoice) => {
         setSelectedInvoice(invoice);
@@ -174,9 +185,12 @@ export default function AdminDashboard() {
                             Filtrer
                         </button>
 
-                        <button className="flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-muted/50 hover:bg-gray-100 dark:hover:bg-muted text-sm font-medium rounded-2xl transition-colors whitespace-nowrap">
-                            Plus récents
-                            <ChevronDown className="w-4 h-4" />
+                        <button
+                            onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                            className="flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-muted/50 hover:bg-gray-100 dark:hover:bg-muted text-sm font-medium rounded-2xl transition-colors whitespace-nowrap"
+                        >
+                            {sortOrder === 'desc' ? "Plus récents" : "Plus anciens"}
+                            {sortOrder === 'desc' ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                         </button>
                     </div>
                 </div>

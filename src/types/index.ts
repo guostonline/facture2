@@ -15,6 +15,7 @@ export interface LineItem {
     amount: number; // total
     discount?: number | null;
     net_price?: number | null;
+    promotion_price?: number | null;
 }
 
 export interface InvoiceData {
@@ -22,6 +23,7 @@ export interface InvoiceData {
     store_name: string;
     invoice_date: string;
     total_amount: number;
+    final_price?: number;
     tax_amount: number;
     discount_amount: number;
     line_items: LineItem[];

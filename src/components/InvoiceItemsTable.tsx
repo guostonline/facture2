@@ -16,6 +16,7 @@ const columns = [
     { key: "discount", label: "Remise", type: "number" },
     { key: "net_price", label: "Prix Net", type: "number" },
     { key: "amount", label: "Total", type: "number" }, // Using 'amount' for total
+    { key: "promotion_price", label: "Promotion", type: "number" },
 ] as const;
 
 export function InvoiceItemsTable({ items, onItemsChange }: Props) {
@@ -37,6 +38,8 @@ export function InvoiceItemsTable({ items, onItemsChange }: Props) {
         // Trigger recalculation logic if needed here or in parent
         onItemsChange(updated);
     };
+
+    const calculatedTotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
 
     return (
         <motion.div
@@ -96,6 +99,16 @@ export function InvoiceItemsTable({ items, onItemsChange }: Props) {
                             </tr>
                         ))}
                     </tbody>
+                    <tfoot className="bg-muted/30 font-bold border-t-2 border-primary/20">
+                        <tr>
+                            <td colSpan={columns.length - 1} className="px-4 py-3 text-right text-muted-foreground">
+                                Total (Calculé):
+                            </td>
+                            <td className="px-4 py-3">
+                                {calculatedTotal.toFixed(2)} DH
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
             <p className="text-xs text-muted-foreground px-4 py-3">

@@ -1,13 +1,16 @@
 import type { Invoice } from "@/types";
 
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY?.trim();
 const SITE_URL = window.location.origin;
 const SITE_NAME = "Invoice AI Helper";
 
 export async function extractInvoiceData(file: File): Promise<Partial<Invoice>> {
     if (!OPENROUTER_API_KEY) {
+        console.error("OpenRouter API Key is missing");
         throw new Error("Missing OpenRouter API Key");
     }
+    // Debug: Log key prefix to ensure it's loaded
+    console.log("Using OpenRouter Key:", OPENROUTER_API_KEY.substring(0, 5) + "...");
 
     // Convert file to Base64
     const base64Image = await new Promise<string>((resolve, reject) => {

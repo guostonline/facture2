@@ -98,11 +98,13 @@ export default function Dashboard() {
                     store_name: extractedData.store_name,
                     invoice_date: extractedData.invoice_date,
                     total_amount: extractedData.total_amount,
+                    final_price: extractedData.final_price,
                     tax_amount: extractedData.tax_amount ?? 0,
                     discount_amount: extractedData.discount_amount ?? 0,
                     image_url: urlData.publicUrl,
                     status: 'pending',
-                    category: category
+                    category: category,
+                    promotion_mechanism: extractedData.promotion_mechanism
                 })
                 .select("id")
                 .single();
@@ -114,7 +116,10 @@ export default function Dashboard() {
                 description: item.description || item.product_name || "Item",
                 quantity: item.quantity,
                 unit_price: item.unit_price,
-                amount: item.amount
+                amount: item.amount,
+                discount: item.discount,
+                net_price: item.net_price,
+                promotion_price: item.promotion_price
             }));
 
             const { error: itemsErr } = await supabase.from("invoice_items").insert(itemRows);
@@ -201,7 +206,20 @@ export default function Dashboard() {
                             </div>
 
                             <InvoiceSummaryCard metadata={extractedData} />
-                            <InvoiceItemsTable items={extractedData.line_items} onItemsChange={handleItemsChange} />
+                            <InvoiceItemsTable
+                                items={extractedData.line_items}
+                                onItemsChange={handleItemsChange}
+                            />
+
+                            <div className="glass rounded-2xl p-6">
+                                <label className="block text-sm font-medium mb-2">Commentaire / Promotion</label>
+                                <textarea
+                                    className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[80px]"
+                                    value={extractedData.promotion_mechanism || ""}
+                                    placeholder="Expliquez les promotions..."
+                                    onChange={(e) => setExtractedData({ ...extractedData, promotion_mechanism: e.target.value })}
+                                />
+                            </div>
 
                             <div className="flex flex-wrap justify-end gap-3 pt-4">
                                 <button

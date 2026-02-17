@@ -29,6 +29,7 @@ export async function createInvoice(invoiceData: InvoiceData, userId: string, im
             store_name: invoiceData.store_name,
             invoice_date: invoiceData.invoice_date,
             total_amount: invoiceData.total_amount,
+            final_price: invoiceData.final_price,
             tax_amount: invoiceData.tax_amount,
             discount_amount: invoiceData.discount_amount,
             image_url: imageUrl,
