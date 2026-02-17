@@ -22,6 +22,7 @@ export default function Compare() {
     // Product Analysis State
     const [selectedProduct, setSelectedProduct] = useState<string>("");
     const [filterCity, setFilterCity] = useState<string>("all");
+    const [filterCategory, setFilterCategory] = useState<string>("all");
     const [filterUser, setFilterUser] = useState<string>("all");
     const [priceMetric, setPriceMetric] = useState<'unit_price' | 'net_price' | 'promotion_price'>('unit_price');
     const [hideZero, setHideZero] = useState<boolean>(false);
@@ -34,6 +35,7 @@ export default function Compare() {
 
     // Filters Data
     const cities = useMemo(() => Array.from(new Set(invoices?.map(i => i.user?.city).filter((c): c is string => !!c) || [])).sort(), [invoices]);
+    const categories = useMemo(() => Array.from(new Set(invoices?.map(i => i.category).filter((c): c is string => !!c) || [])).sort(), [invoices]);
     const filteredUsers = useMemo(() => {
         let filtered = invoices || [];
         if (filterCity !== "all") {
@@ -57,6 +59,7 @@ export default function Compare() {
     const allProducts = useMemo(() => {
         const products = new Set<string>();
         invoices?.forEach(inv => {
+            if (filterCategory !== "all" && inv.category !== filterCategory) return;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (inv as any).line_items?.forEach((item: any) => {
                 if (item.description) products.add(item.description);
@@ -71,6 +74,7 @@ export default function Compare() {
         const data: any[] = [];
         invoices?.forEach(inv => {
             if (filterCity !== "all" && inv.user?.city !== filterCity) return;
+            if (filterCategory !== "all" && inv.category !== filterCategory) return;
             if (filterUser !== "all" && inv.user?.name !== filterUser) return;
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,7 +98,7 @@ export default function Compare() {
             });
         });
         return data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [selectedProduct, invoices, filterCity, filterUser, priceMetric, hideZero]);
+    }, [selectedProduct, invoices, filterCity, filterUser, filterCategory, priceMetric, hideZero]);
 
     if (isLoading) {
         return (
@@ -260,7 +264,17 @@ export default function Compare() {
                 <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
                     <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/50 shadow-sm space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {/* Agence Filter */}
+                            {/* Product Filter - Top Priority */}
+                            <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-4">
+                                <SearchableSelect
+                                    label="Produit"
+                                    placeholder="Choisir un produit..."
+                                    value={selectedProduct}
+                                    onChange={setSelectedProduct}
+                                    options={allProducts}
+                                />
+                            </div>
+
                             {/* Agence Filter */}
                             <div className="space-y-2">
                                 <SearchableSelect
@@ -269,6 +283,19 @@ export default function Compare() {
                                     value={filterCity}
                                     onChange={setFilterCity}
                                     options={cities}
+                                    defaultOptionLabel="Toutes"
+                                    defaultOptionValue="all"
+                                />
+                            </div>
+
+                            {/* Category Filter */}
+                            <div className="space-y-2">
+                                <SearchableSelect
+                                    label="Gamme"
+                                    placeholder="Toutes"
+                                    value={filterCategory}
+                                    onChange={setFilterCategory}
+                                    options={categories}
                                     defaultOptionLabel="Toutes"
                                     defaultOptionValue="all"
                                 />
@@ -284,17 +311,6 @@ export default function Compare() {
                                     options={filteredUsers}
                                     defaultOptionLabel="Tous"
                                     defaultOptionValue="all"
-                                />
-                            </div>
-
-                            {/* Product Filter */}
-                            <div className="space-y-2 col-span-1 md:col-span-2">
-                                <SearchableSelect
-                                    label="Produit"
-                                    placeholder="Choisir un produit..."
-                                    value={selectedProduct}
-                                    onChange={setSelectedProduct}
-                                    options={allProducts}
                                 />
                             </div>
                         </div>
